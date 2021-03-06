@@ -1,0 +1,587 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <conio.h>
+#include <cmath>
+#include <list>
+#include <vector>
+using namespace std;
+
+class Info
+{
+    private:
+    ifstream INPUT_SOURCE;
+    char Inputtxt[1000];
+    string Inputstring;
+
+    public:
+    string input();
+    ofstream OUTPUT_SOURCE;
+    string file_select();
+
+    void output();
+};
+
+class Crypt: public Info
+{
+    private:
+    string info;
+    string Decrypt;
+    string Crypt;
+    int select;
+    bool Encrypted = false;
+
+    public:
+    int byting [8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    vector <int> dataray;
+    void Crypt_Select(int);
+    void DeCrypt_Select(int);
+    void save_crypt();
+    void binary_conv(int);
+    char decimal_conv(int, int, int, int, int, int, int ,int);
+
+    //Input
+    void info_input();
+
+    //Reverse
+    string Crypt_L1();
+    string DeCrypt_L1();
+
+    //+1
+    string Crypt_L2(string);
+    string Decrypt_L2();
+
+    //Password Dependent
+    string Crypt_L3(string, int);
+    string DeCrypt_L3(int);
+
+    //Binary Encryption
+    void Crypt_L4();
+    void DeCrypt_L4();
+
+};
+
+class Pass
+{
+    private:
+    string passw;
+    string check;
+
+    public:
+
+    Pass()
+    {
+        set_pass();
+    }
+
+    void set_pass();
+    int pass_size();
+    bool input_pass();
+
+};
+
+
+//------------------------------------------MAIN FUNCTION----------------------------------------------
+int main ()
+{
+    puts("Welcome to CRYPT");
+        Info Plain;
+        Pass User;
+        Crypt Test;
+
+    char UT;
+    int select = 0;
+    
+    do
+    {
+        puts("What would you like to do with your data?");
+        puts("Encrypt : 0     Decrypt : 1     Save Crypt & Key : 2\n");
+        
+        switch (getch() - 48)
+        {
+            case(0):
+            {
+                Test.info_input();
+                Test.Crypt_Select(User.pass_size());
+                break;
+            }
+            case(1):
+            {
+                User.input_pass();
+                Test.DeCrypt_Select(User.pass_size());
+                break;
+            }
+            case(2):
+            {
+                Test.save_crypt();
+                break;
+            }
+        };
+
+        puts("\nWould you like to continue?");
+        puts("Yes : 1   No : 0\n");
+        select = getch() - 48;
+    }while(select >= 1);
+
+    if(select == 0){puts("\nClosing CRYPT");};
+
+    return 0 ;
+}
+
+//FILE INPUT
+string Info::input()
+{
+    puts("\nGrabbing Information to Encrypt");
+    Inputstring.clear();
+    INPUT_SOURCE.open(file_select(), ios::in);
+
+    if(INPUT_SOURCE.is_open())
+    {
+        while(!INPUT_SOURCE.eof())
+        {
+            while(INPUT_SOURCE.getline(Inputtxt, 100, '\n'))
+            {
+                Inputstring = Inputstring + Inputtxt;
+                Inputstring = Inputstring + '\n';
+            }
+        }
+    }
+    INPUT_SOURCE.close();
+    return Inputstring;
+};
+
+//FILE SELECT
+string Info::file_select()
+{
+    string selection;
+    int choice = 0;
+
+    while(choice == 0)
+    {
+    puts("Please input the File-Path you want to Encrypt");
+    cin.clear();
+    cin >> selection;
+
+    puts("\nIs this correct (No : 0  Yes : 1):");
+    cout << selection << endl;
+    choice = getch() - 48;
+    }
+
+    cout << "\nLoading in File" << endl;
+    return selection;
+};
+
+void Crypt::save_crypt()
+{
+    string save_name;
+    string file_name;
+
+    if(Encrypted == false)
+    {
+        puts("There is no Encryption to be saved");
+    }
+    else if(Encrypted == true)
+    {
+        puts("Saving Encryption: Please input a file name");
+        cin >> save_name;
+        file_name = "D:/VSCode/Projects/Crypt/V1.1(Files)/" + save_name + ".txt";
+
+        OUTPUT_SOURCE.open(file_name, ios::in);
+        if(OUTPUT_SOURCE.is_open()){puts("Output open");};
+        OUTPUT_SOURCE << Crypt << endl;
+        OUTPUT_SOURCE.close();
+        puts("Save Complete!!");
+    };
+};
+
+//INPUT TO CRYPT
+void Crypt::info_input()
+{
+    int choice;
+    puts("Please specify the information you would like to Encrypt");
+    cout << "Input from file? : 0  Input through type? : 1" << endl;
+    choice = getch() - 48;
+
+    if(choice >= 1)
+    {
+        puts("\nPlease type out your message to encrypt:");
+        //cin.ignore(256, '\n');
+        getline(cin, info);
+        puts("Info stored. Ready for Encryption...");
+    }
+    else if(choice <= 0)
+    {
+        info = input();
+    }
+};
+
+//PASSWORD
+void Pass::set_pass()
+{
+    int choice = 1;
+    do 
+    {
+        if(choice <=0){cin.ignore(256, '\n');};
+
+        puts("Please Enter your password");
+        getline(cin , passw);
+        cout << "\nThis is your password: " << passw << endl;
+        puts("Is this correct: No:0 Yes:1");
+
+        choice = getch() - 48;
+        if(choice <=0){puts("Password not set...");};
+
+    }while(choice <=0);
+
+    if(choice == 1){cout << "\nThank you. Password set to " << passw << endl << endl;};
+
+};
+
+bool Pass::input_pass()
+{
+    int counter = 1;
+    //cin.ignore(256, '\n'); // Enter was required, removing resolved.
+    bool correct = false;
+
+    do
+    {
+        if(counter == 2){cout << "Attempt " << counter << " of 3" << endl;}
+        else if(counter == 3){puts("This is your last attempt!");};
+
+        puts("Please enter your password: ");
+
+        getline(cin, check);
+
+        if(check == passw)
+        {
+            puts("Password correct");
+            correct = true;
+        }
+        else
+        {
+            puts("Password Incorrect\n");
+            counter = counter + 1;
+        }
+    }while(correct == false && counter <=3);
+
+    return correct;
+
+};
+
+int Pass::pass_size()
+{
+    return passw.size();
+};
+
+//SELECTION
+void Crypt::Crypt_Select(int shift)
+{
+    int choice;
+
+    puts("\nSelect your Crypt Security Level: \n");
+    puts("  Level 1 : Minor Security\n");
+    puts("  Level 2 : Moderate Security\n");
+    puts("  Level 3 : High Security\n");
+    puts("  Level 4 : To Binary\n");
+
+    choice = getch() - 48;
+
+    switch(choice)
+    {
+        case(1): //Minor Level 1
+        {
+            Crypt_L1();
+            puts("\nData has been encrypted");
+            cout << Crypt << endl;
+            select = 1;
+            Encrypted = true;
+            break;
+        }
+
+        case(2): //Moderate Security
+        {
+            Crypt_L2(Crypt_L1());
+            puts("\nData has been encrypted");
+            cout << Crypt << endl;
+            select = 2;
+            Encrypted = true;
+            break;
+        }
+
+        case (3):
+        {
+            Crypt_L3(Crypt_L2(Crypt_L1()), shift);
+            cout << Crypt << endl;
+            puts("\nData has been encrypted");
+            select = 3;
+            Encrypted = true;
+            break;
+        }
+
+        case (4):
+        {
+            Crypt_L4();
+            puts("\nData has been encrypted");
+            select = 4;
+            Encrypted = true;
+            break;
+        }
+
+    }
+};
+
+void Crypt::DeCrypt_Select(int shift)
+{
+    int choice;
+
+    puts("Are you sure you want to Decrypt\n  Yes : 1     No : 0");
+    cin >> choice;
+
+    if(choice == 1)
+    {
+        switch(select)
+        {
+            case(1):
+            {
+                DeCrypt_L1();
+                puts("\nData has been Decrypted");
+                cout << Decrypt << endl;
+                break;
+            }
+
+            case(2):
+            {
+                Decrypt_L2();
+                DeCrypt_L1();
+                puts("\nData has been Decrypted");
+                cout << Decrypt << endl;
+                break;
+            }
+            case(3):
+            {
+                DeCrypt_L3(shift);
+                Decrypt_L2();
+                DeCrypt_L1();
+                puts("\nData has been Decrypted");
+                cout << Decrypt << endl;
+                break;
+            };
+
+            case(4):
+            {
+                DeCrypt_L4();
+                break;
+            };
+        }
+    }
+    else if(choice == 0){puts("Data was not Decrypted");};
+}
+
+//BINARY CONVERSION
+void Crypt::binary_conv(int num)
+{
+    int bytecount = 7;
+    int mod = 0;
+
+    byting[0] = 0;byting[1] = 0;byting[2] = 0;byting[3] = 0;
+    byting[4] = 0;byting[5] = 0;byting[6] = 0;byting[7] = 0;
+
+    do
+    {
+            mod = num%2;
+            byting[bytecount] = mod;
+            bytecount--;
+
+
+        if(num == 1){num = 0;}
+        else{num = num/2;}
+ 
+    }while(num != 0);
+
+}
+
+char Crypt::decimal_conv(int a, int b, int c, int d, int e, int f, int g, int h)
+{
+    int DC [2][8];
+    DC[0][0] = a;
+    DC[0][1] = b;
+    DC[0][2] = c;
+    DC[0][3] = d;
+    DC[0][4] = e;
+    DC[0][5] = f;
+    DC[0][6] = g;
+    DC[0][7] = h;
+
+    DC[1][0] = 128;
+    DC[1][1] = 64;
+    DC[1][2] = 32;
+    DC[1][3] = 16;
+    DC[1][4] = 8;
+    DC[1][5] = 4;
+    DC[1][6] = 2;
+    DC[1][7] = 1;
+
+    int conv = 0;
+    for(int i = 7; i >= 0; i--)
+    {
+        if(DC[0][i] == 1)
+        {
+            conv = conv + DC[1][i];
+        };
+    }
+
+    return (char)conv;
+
+}
+
+//REVERSE
+string Crypt::Crypt_L1()
+{
+    int size_lock = info.size();
+    string CL1info;
+
+    for(int i = 0; i < size_lock; i++)
+    {
+        CL1info = CL1info + info.back();
+        info.pop_back();
+    }
+
+    Crypt = CL1info;
+
+    return Crypt;
+};
+
+string Crypt::DeCrypt_L1()
+{
+    int size_lock = Crypt.size();
+    string DCL1info;
+
+    for(int i = 0; i < size_lock; i++)
+    {
+        DCL1info = DCL1info + Crypt.back();
+        Crypt.pop_back();
+    }
+
+    Decrypt = DCL1info;
+
+    return Decrypt;
+
+};
+
+//ASCII +1
+string Crypt::Crypt_L2(string LVL1)
+{
+    int change;
+    char change_result;
+    string result;
+
+    for(int i = 0; i < LVL1.size(); i++)
+    {
+        change = (int)LVL1.at(i);
+        change = change + 1;
+        change_result = (char)change;
+        result = result + change_result;
+    }
+
+    Crypt = result;
+
+    return Crypt;
+};
+
+string Crypt::Decrypt_L2()
+{
+    int change;
+    char change_result;
+    string result;
+
+    for(int i = 0; i < Crypt.size(); i++)
+    {
+        change = (int)Crypt.at(i);
+        change = change - 1;
+        change_result = (char)change;
+        result = result + change_result;
+    }
+
+    Crypt = result;
+
+    return Crypt;
+};
+
+// PASSWORD DEPENDENT ASCII +
+string Crypt::Crypt_L3(string LVL2, int shift)
+{
+    int change;
+    char change_result;
+    string result;
+   
+    for(int i = 0; i < LVL2.size(); i++)
+    {
+        change = (int)LVL2.at(i);
+        change = change + shift;
+        change_result = (char)change;
+        result = result + change_result;
+    }
+
+    Crypt = result;
+    return Crypt;
+};
+
+string Crypt::DeCrypt_L3(int shift)
+{
+    int change;
+    char change_result;
+    string result;
+
+    for(int i = 0; i < Crypt.size(); i++)
+    {
+        change = (int)Crypt.at(i);
+        change = change - shift;
+        change_result = (char)change;
+        result = result + change_result;
+    }
+
+    Crypt = result;
+    return Crypt;
+};
+
+void Crypt::Crypt_L4()
+{
+    dataray.resize(1);
+    int i = 0;
+    int b = 0; // Full Binary Array size
+    int convert;
+    int bin_convert;
+
+    do
+    {
+        binary_conv((int)info.at(i));
+            for(int c = 0; c < 8; c++)
+            {
+                dataray.at(b) = byting[c];
+                dataray.resize(dataray.size()+1);
+                b++;
+            };
+
+        i++;
+    }while(i !=info.size());
+
+    for(int d = 0; d < b; d++)
+    {
+        cout << dataray.at(d);
+    };
+    puts("\n");
+};
+
+void Crypt::DeCrypt_L4()
+{
+    int b = 0; //counter
+
+    for(int i = dataray.size(); i >= 2; i=i-8)
+    {
+        Decrypt = Decrypt + decimal_conv(dataray.at(b), dataray.at(b+1), dataray.at(b+2), dataray.at(b+3),
+        dataray.at(b+4), dataray.at(b+5), dataray.at(b+6), dataray.at(b+7));
+            b = b + 8;
+    };
+
+    cout << Decrypt << endl;
+};
